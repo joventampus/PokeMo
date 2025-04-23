@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PokéMwo</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      text-align: center;
+      background-color: #e6f2ff;
+      padding: 10px;
+    }
+
+    h1 {
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+
+    .spawn-area {
+      margin-top: 30px;
+    }
+
+    .pokemon-img {
+      filter: brightness(0%) contrast(200%);
+      width: 120px;
+      margin: 0 auto;
+    }
+
+    input {
+      margin-top: 20px;
+      padding: 10px;
+      font-size: 14px;
+      width: 80%;
+      max-width: 300px;
+    }
+
+    button {
+      padding: 10px 15px;
+      margin-top: 10px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background-color: #ff6347;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      width: 80%;
+      max-width: 300px;
+    }
+
+    button:hover {
+      transform: scale(1.0);
+      background-color: #6a22f0;
+    }
+
+    button:active {
+      transform: scale(1);
+    }
+
+    .message {
+      margin-top: 20px;
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    .caught-list {
+      margin-top: 30px;
+    }
+
+    .caught-list img {
+      width: 40px;
+      margin: 5px;
+    }
+
+    .book-button {
+      font-size: 18px;
+      cursor: pointer;
+      padding: 8px 16px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      width: 80%;
+      max-width: 300px;
+    }
+
+    .generation-button {
+      margin: 8px;
+      padding: 8px 16px;
+      background-color: #4682b4;
+      color: white;
+      cursor: pointer;
+      font-size: 14px;
+      width: 80%;
+      max-width: 300px;
+    }
+
+    .generation-button:hover {
+      background-color: #5f9ea0;
+    }
+
+    .active {
+      background-color: #5f9ea0;
+    }
+
+    .rare-pokemon {
+      color: #ffbb00;
+      font-weight: bold;
+    }
+
+    .mythical-pokemon {
+      color: red;
+      font-weight: bold;
+    }
+
+    .pokedex-container {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+      z-index: 1000;
+      max-height: 80%;
+      overflow-y: auto;
+      width: 80%;
+    }
+
+    .pokedex-list {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .pokedex-entry {
+      text-align: center;
+      margin: 10px;
+      width: 30%;
+      max-width: 100px;
+    }
+
+    .close-pokedex {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 10px;
+  font-size: 18px;
+  cursor: pointer;
+  background-color: #ff6666;
+  color: white;
+  border: none;
+  border-radius: 50%; /* This makes the button round */
+  width: 40px; /* Set a fixed width */
+  height: 40px; /* Set a fixed height */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+
+    @media screen and (max-width: 360px) {
+      body {
+        padding: 5px;
+      }
+
+      h1 {
+        font-size: 18px;
+      }
+
+      .pokemon-img {
+        width: 100px;
+      }
+
+      input, button, .book-button, .generation-button {
+        width: 90%;
+        max-width: 300px;
+        font-size: 14px;
+      }
+
+      .caught-list img {
+        width: 30px;
+      }
+
+      .message {
+        font-size: 14px;
+      }
+
+      .pokedex-entry {
+        width: 45%;
+      }
+
+      .pokedex-container {
+        width: 90%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🌟 Pokémo - Catch 'em All! 🌟</h1>
+  <button onclick="spawnPokemon()">🎲 Spawn Pokémon</button>
+
+  <div class="spawn-area" id="spawnArea"></div>
+
+  <div class="message" id="message"></div>
+
+  <div class="caught-list" id="caughtList">
+    <div id="caughtImages"></div>
+  </div>
+  <!-- <button onclick="resetApp()">Reset App</button> -->
+  <button class="book-button" onclick="toggleCaughtList()">🎒 Your Caught Pokémon</button>
+  <button class="book-button" onclick="togglePokedex()">📖 Open Pokédex</button>
+
+  <div class="pokedex-container" id="caughtContainer">
+    <button class="close-pokedex" onclick="toggleCaughtList()">❌</button>
+    <h3>Your Caught Pokémon:</h3>
+    <div class="pokedex-list" id="caughtFullList"></div>
+  </div>
+
+  <!-- Pokédex Modal -->
+  <div class="pokedex-container" id="pokedexContainer">
+    <button class="close-pokedex" onclick="togglePokedex()">❌</button>
+    <h3>Your Pokédex:</h3>
+    <div id="generationButtons">
+      <button class="generation-button" onclick="filterByGeneration(1)">Generation 1</button>
+      <button class="generation-button" onclick="filterByGeneration(2)">Generation 2</button>
+      <button class="generation-button" onclick="filterByGeneration(3)">Generation 3</button>
+      <button class="generation-button" onclick="filterByGeneration(4)">Generation 4</button>
+      <button class="generation-button" onclick="filterByGeneration(5)">Generation 5</button>
+      <button class="generation-button" onclick="filterByGeneration(6)">Generation 6</button>
+      <button class="generation-button" onclick="filterByGeneration(7)">Generation 7</button>
+      <button class="generation-button" onclick="filterByGeneration(8)">Generation 8</button>
+      <button class="generation-button" onclick="filterByGeneration(9)">Generation 9</button>
+    </div>
+    <div class="pokedex-list" id="pokedexList"></div>
+  </div>
+
+  <script>
+    const generationRanges = {
+      1: [1, 151],
+      2: [152, 251],
+      3: [252, 386],
+      4: [387, 493],
+      5: [494, 649],
+      6: [650, 721],
+      7: [722, 809],
+      8: [810, 898],
+      9: [899, 1010]
+    };
+
+    let currentPokemon = null;
+    let caught = JSON.parse(localStorage.getItem('caughtPokemon') || '[]');
+    let pokedex = JSON.parse(localStorage.getItem('pokedex') || '[]');
+
+    // Function to spawn a random Pokémon
+    function spawnPokemon() {
+      const maxId = 1010;
+
+      let attempts = 0;
+      const maxAttempts = 50;
+
+      function trySpawn() {
+        if (attempts >= maxAttempts) {
+          document.getElementById("message").innerText = "🥹 All Pokémon caught!";
+          return;
+        }
+
+        const id = Math.floor(Math.random() * maxId) + 1;
+        if (caught.find(p => p.id === id)) {
+          attempts++;
+          trySpawn();
+          return;
+        }
+
+        fetch(`https://pokeapi.co/api/v2/pokemon/${id}`)
+          .then(res => res.json())
+          .then(data => {
+            currentPokemon = data;
+            hintUsed = false; // Reset when new Pokémon spawns
+            document.getElementById("spawnArea").innerHTML = `  
+              <img src="${data.sprites.front_default}" class="pokemon-img" id="pokeImage">
+              <br>
+              <input type="text" id="guessInput" placeholder="Who's that Pokémon?">
+              <br>
+              <button onclick="checkGuess()">✅ Catch</button>
+              <button onclick="showHint()">💡 Hint</button>
+              <div id="hintDisplay" style="margin-top: 10px; font-size: 18px; font-weight: bold;"></div>
+            `;
+          });
+      }
+
+      trySpawn();
+    }
+
+
+    // Function to check if the guess is correct
+    function checkGuess() {
+      const guess = document.getElementById("guessInput").value.toLowerCase().trim();
+      if (!currentPokemon) return;
+
+      if (guess === currentPokemon.name) {
+        document.getElementById("message").innerText = `🎉 You caught ${currentPokemon.name.toUpperCase()}! (ID: ${currentPokemon.id})`;
+        document.getElementById("pokeImage").style.filter = "none";
+        addToCaught(currentPokemon);
+        addToPokedex(currentPokemon);
+      } else {
+        document.getElementById("message").innerText = `❌ Nope! Try again. (ID: ${currentPokemon.id})`;
+      }
+    }
+
+    // Add the caught Pokémon to localStorage
+    function addToCaught(pokemon) {
+      if (!caught.find(p => p.id === pokemon.id)) {
+        caught.push({ id: pokemon.id, name: pokemon.name, sprite: pokemon.sprites.front_default });
+        localStorage.setItem('caughtPokemon', JSON.stringify(caught));
+      }
+    }
+
+    // Add Pokémon to the Pokédex and save their generation
+    function addToPokedex(pokemon) {
+      if (!pokedex.find(p => p.id === pokemon.id)) {
+        const generation = getGeneration(pokemon.id); // Determine generation based on ID
+        pokedex.push({ id: pokemon.id, name: pokemon.name, sprite: pokemon.sprites.front_default, generation });
+        localStorage.setItem('pokedex', JSON.stringify(pokedex));
+        renderPokedex();
+      }
+    }
+
+    // Function to determine the Pokémon generation based on ID
+    function getGeneration(id) {
+      if (id <= 151) return 1; // Gen 1
+      if (id <= 251) return 2; // Gen 2
+      if (id <= 386) return 3; // Gen 3
+      if (id <= 493) return 4; // Gen 4
+      if (id <= 649) return 5; // Gen 5
+      if (id <= 721) return 6; // Gen 6
+      if (id <= 809) return 7; // Gen 7
+      if (id <= 898) return 8; // Gen 8
+      return 9; // Gen 9
+    }
+
+    // Render the Pokédex with filtered generations
+    function renderPokedex() {
+      const list = document.getElementById("pokedexList");
+      list.innerHTML = '';
+
+      const activeBtn = document.querySelector('.generation-button.active');
+      const generation = activeBtn ? parseInt(activeBtn.textContent.split(' ')[1]) : 1;
+      const [start, end] = generationRanges[generation];
+
+      const legendaryPokemon = [
+        'articuno', 'zapdos', 'moltres', 'mewtwo', 'mew',
+        'raikou', 'entei', 'suicune', 'lugia', 'ho-oh', 'celebi',
+        'regirock', 'regice', 'registeel', 'latias', 'latios', 'kyogre', 'groudon', 'rayquaza', 'jirachi', 'deoxys',
+        'uxie', 'mesprit', 'azelf', 'dialga', 'palkia', 'heatran', 'regigigas', 'giratina', 'cresselia', 'darkrai', 'manaphy', 'phione', 'shaymin', 'arceus',
+        'cobalion', 'terrakion', 'virizion', 'tornadus', 'thundurus', 'reshiram', 'zekrom', 'landorus', 'kyurem', 'keldeo', 'meloetta', 'genesect',
+        'xerneas', 'yveltal', 'zygarde', 'diancie', 'hoopa', 'volcanion',
+        'tapu-koko', 'tapu-lele', 'tapu-bulu', 'tapu-fini', 'cosmog', 'cosmoem', 'solgaleo', 'lunala', 'nihilego', 'buzzwole', 'pheromosa', 'xurkitree', 'celesteela', 'kartana', 'guzzlord', 'necrozma', 'magearna', 'marshadow', 'zeraora',
+        'zacian', 'zamazenta', 'eternatus', 'kubfu', 'urshifu', 'zarude', 'regieleki', 'regidrago', 'glastrier', 'spectrier', 'calyrex',
+        'koraidon','miraidon','ting-lu','chien-pao','wo-chien','chi-yu','walking-wake','iron-leaves','ogerpon','okidogi','munkidori','fezandipiti','terapagos'
+      ];
+
+      const mythicalPokemon = [
+        'mew', 'celebi', 'jirachi', 'deoxys-normal', 'phione', 'manaphy', 'darkrai',
+        'shaymin', 'arceus', 'victini', 'keldeo', 'meloetta', 'genesect',
+        'diancie', 'hoopa', 'volcanion', 'magearna', 'marshadow', 'zeraora',
+        'meltan', 'melmetal', 'zarude'
+      ];
+
+      for (let id = start; id <= end; id++) {
+        const caughtPokemon = pokedex.find(p => p.id === id);
+
+        const entry = document.createElement("div");
+        entry.classList.add("pokedex-entry");
+
+        if (caughtPokemon) {
+          const name = caughtPokemon.name.toLowerCase();
+          const isLegendary = legendaryPokemon.includes(name);
+          const isMythical = mythicalPokemon.includes(name);
+
+          let nameClass = '';
+          if (isMythical) {
+            nameClass = 'mythical-pokemon';
+          } else if (isLegendary) {
+            nameClass = 'rare-pokemon';
+          }
+
+          entry.innerHTML = `
+            <img src="${caughtPokemon.sprite}" alt="${caughtPokemon.name}" title="${caughtPokemon.name}">
+            <span class="${nameClass}">
+              ${caughtPokemon.name.toUpperCase()}
+            </span>
+            <span>ID: ${caughtPokemon.id}</span>
+          `;
+        } else {
+          entry.innerHTML = `
+            <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png" alt="Unknown" title="Unknown">
+            <span>???</span>
+            <span>ID: ${id}</span>
+          `;
+        }
+
+        list.appendChild(entry);
+      }
+    }
+
+
+
+
+    // Toggle the visibility of the Pokédex modal
+    function togglePokedex() {
+      const pokedexContainer = document.getElementById("pokedexContainer");
+      pokedexContainer.style.display = pokedexContainer.style.display === 'none' ? 'block' : 'none';
+    }
+
+    // Filter Pokémon based on the generation button clicked
+    function filterByGeneration(generation) {
+      const buttons = document.querySelectorAll('.generation-button');
+      buttons.forEach(button => button.classList.remove('active'));
+      document.querySelector(`.generation-button:nth-child(${generation})`).classList.add('active');
+      renderPokedex(); // Filter and render the pokedex based on generation
+    }
+
+    // Render the initial Pokédex when the page loads
+    renderPokedex(); 
+
+    function showHint() {
+      if (!currentPokemon || hintUsed) return;
+
+      const name = currentPokemon.name.toUpperCase();
+      let hint = "";
+
+      for (let i = 0; i < name.length; i++) {
+        if (i === 0 || i === name.length - 1) {
+          hint += name[i];
+        } else {
+          hint += Math.random() > 0.5 ? "_" : name[i];
+        }
+      }
+
+      document.getElementById("hintDisplay").innerText = `Hint: ${hint}`;
+      hintUsed = true;
+    }
+
+    function toggleCaughtList() {
+        const container = document.getElementById("caughtContainer");
+        if (container.style.display === 'block') {
+            container.style.display = 'none';
+        } else {
+            renderCaughtFullList();
+            container.style.display = 'block';
+        }
+    }
+
+    function renderCaughtFullList() {
+      const list = document.getElementById("caughtFullList");
+      list.innerHTML = '';
+
+      const legendaryPokemon = [
+        'articuno', 'zapdos', 'moltres', 'mewtwo', 'mew',
+        'raikou', 'entei', 'suicune', 'lugia', 'ho-oh', 'celebi',
+        'regirock', 'regice', 'registeel', 'latias', 'latios', 'kyogre', 'groudon', 'rayquaza', 'jirachi', 'deoxys',
+        'uxie', 'mesprit', 'azelf', 'dialga', 'palkia', 'heatran', 'regigigas', 'giratina', 'cresselia', 'darkrai', 'manaphy', 'phione', 'shaymin', 'arceus',
+        'cobalion', 'terrakion', 'virizion', 'tornadus', 'thundurus', 'reshiram', 'zekrom', 'landorus', 'kyurem', 'keldeo', 'meloetta', 'genesect',
+        'xerneas', 'yveltal', 'zygarde', 'diancie', 'hoopa', 'volcanion',
+        'tapu-koko', 'tapu-lele', 'tapu-bulu', 'tapu-fini', 'cosmog', 'cosmoem', 'solgaleo', 'lunala', 'nihilego', 'buzzwole', 'pheromosa', 'xurkitree', 'celesteela', 'kartana', 'guzzlord', 'necrozma', 'magearna', 'marshadow', 'zeraora',
+        'zacian', 'zamazenta', 'eternatus', 'kubfu', 'urshifu', 'zarude', 'regieleki', 'regidrago', 'glastrier', 'spectrier', 'calyrex',
+        'koraidon','miraidon','ting-lu','chien-pao','wo-chien','chi-yu','walking-wake','iron-leaves','ogerpon','okidogi','munkidori','fezandipiti','terapagos'
+      ];
+
+      const mythicalPokemon = [
+        'mew', 'celebi', 'jirachi', 'deoxys-normal', 'phione', 'manaphy', 'darkrai',
+        'shaymin', 'arceus', 'victini', 'keldeo', 'meloetta', 'genesect',
+        'diancie', 'hoopa', 'volcanion', 'magearna', 'marshadow', 'zeraora',
+        'meltan', 'melmetal', 'zarude'
+      ];
+
+      caught.forEach(p => {
+        const name = p.name.toLowerCase();
+        const isLegendary = legendaryPokemon.includes(name);
+        const isMythical = mythicalPokemon.includes(name);
+
+        let nameClass = '';
+        if (isMythical) {
+          nameClass = 'mythical-pokemon';
+        } else if (isLegendary) {
+          nameClass = 'rare-pokemon';
+        }
+
+        const entry = document.createElement("div");
+        entry.classList.add("pokedex-entry");
+        entry.innerHTML = `
+          <img src="${p.sprite}" alt="${p.name}" title="${p.name}">
+          <span class="${nameClass}">${p.name.toUpperCase()}</span>
+        `;
+        list.appendChild(entry);
+      });
+    }
+
+
+    function resetApp() {
+      if (confirm("Reset app data?")) {
+        localStorage.clear(); // Clear all saved data from localStorage
+        location.reload(); // Reload to reset the page to its fresh state
+      }
+    }
+
+
+
+
+  </script>
+
+</body>
+</html>
